@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Validação de Atestado Médico Digital</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<header class="topo">
+
+    <div class="topo-centro">
+
+        <img src="logo.jpg" class="logo">
+
+        <h1>Validação de Atestado Médico Digital</h1>
+
+    </div>
+
+</header>
+
+
+<main class="conteudo">
+
+<div class="caixa">
+
+<div class="lado-esquerdo">
+
+<label class="titulo-campo">
+Código do Atestado
+</label>
+
+<input
+type="text"
+id="identificador"
+placeholder="Digite o código"
+autocomplete="off"
+>
+
+<div class="captcha">
+
+<label class="captcha-label">
+Digite o conteúdo da imagem
+</label>
+
+<div class="captcha-box">
+
+<canvas id="captchaCanvas"
+width="120"
+height="40">
+</canvas>
+
+<button
+type="button"
+id="novoCaptcha"
+class="btn-refresh">
+↻
+</button>
+
+</div>
+
+<input
+type="text"
+id="captcha"
+placeholder="Digite o código"
+autocomplete="off"
+>
+
+</div>
+
+</div>
+
+
+<div class="lado-direito">
+
+<button
+id="btnPesquisar"
+class="btn-pesquisar">
+
+Pesquisar
+
+</button>
+
+<div
+id="resultado"
+class="resultado">
+
+</div>
+
+<a
+id="btnDocumento"
+class="btn-documento"
+target="_blank"
+style="display:none;">
+
+Visualizar Documento
+
+</a>
+
+</div>
+
+</div>
+
+</main>
+
+
+<footer>
+
+© 2026 Unimed Nacional - Sistema de Validação de Atestados Médicos Digitais
+
+<br>
+
+Certificação Digital ICP-Brasil
+
+</footer>
+
+
+<script>
+
+const URL_API =
+"https://script.google.com/macros/s/AKfycbwIhe3-YHIXqppNkIJbbLwNrZgiq7K1FbddZpsUXR-IJFQfM6r9I706VG5WfpD3rmQ/exec";
+
+
+let captchaGerado = "";
+
+
+/* ===========================
+   GERA CAPTCHA
+=========================== */
+
+function gerarCaptcha(){
+
+const letras =
+"ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+captchaGerado="";
+
+for(let i=0;i<5;i++){
+
+captchaGerado +=
+letras.charAt(
+Math.floor(Math.random()*letras.length)
+);
+
+}
+
+const canvas =
+document.getElementById("captchaCanvas");
+
+const ctx =
+canvas.getContext("2d");
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+ctx.fillStyle="#ffffff";
+
+ctx.fillRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+ctx.font="30px Arial";
+
+ctx.fillStyle="#008000";
+
+ctx.fillText(
+captchaGerado,
+12,
+30
+);
+
+for(let i=0;i<8;i++){
+
+ctx.beginPath();
+
+ctx.moveTo(
+Math.random()*120,
+Math.random()*40
+);
+
+ctx.lineTo(
+Math.random()*120,
+Math.random()*40
+);
+
+ctx.strokeStyle="#888";
+
+ctx.stroke();
+
+}
+
+}
+
+document
+.getElementById("novoCaptcha")
+.onclick=gerarCaptcha;
+/* ===========================
+   CONSULTA
+=========================== */
+
+async function consultar() {
+
+    const identificador =
+        document.getElementById("identificador")
+        .value
+        .trim();
+
+    const captcha =
+        document.getElementById("captcha")
+        .value
+        .trim()
+        .toUpperCase();
+
+    const resultado =
+        document.getElementById("resultado");
+
+    const btnDocumento =
+        document.getElementById("btnDocumento");
+
+    resultado.innerHTML = "";
+    btnDocumento.style.display = "none";
+
+    if (identificador === "") {
+
+        resultado.className = "resultado erro";
+        resultado.innerHTML = "Informe o código do atestado.";
+
+        return;
+
+    }
+
+    if (captcha !== captchaGerado) {
+
+        resultado.className = "resultado erro";
+        resultado.innerHTML = "Captcha incorreto.";
+
+        gerarCaptcha();
+
+        document.getElementById("captcha").value = "";
+
+        return;
+
+    }
+
+    resultado.className = "resultado";
+    resultado.innerHTML = "Consultando...";
+
+    try {
+
+        const resposta =
+            await fetch(
+                URL_API +
+                "?identificador=" +
+                encodeURIComponent(identificador)
+            );
+
+        const dados =
+            await resposta.json();
+
+        if (dados.encontrado) {
+
+            resultado.className = "resultado sucesso";
+
+            resultado.innerHTML =
+                "<strong>Atestado Válido</strong>";
+
+            if (dados.link && dados.link !== "") {
+
+                btnDocumento.href = dados.link;
+
+                btnDocumento.style.display = "inline-flex";
+
+            }
+
+        } else {
+
+            resultado.className = "resultado erro";
+
+            resultado.innerHTML =
+                "<strong>Atestado não encontrado</strong>";
+
+        }
+
+    } catch (erro) {
+
+        resultado.className = "resultado erro";
+
+        resultado.innerHTML =
+            "Erro ao consultar o servidor.";
+
+        console.log(erro);
+
+    }
+
+}
+document
+.getElementById("btnPesquisar")
+.addEventListener(
+"click",
+consultar
+);
+
+document
+.getElementById("identificador")
+.addEventListener(
+"keypress",
+function(e){
+
+if(e.key==="Enter"){
+
+consultar();
+
+}
+
+}
+);
+
+/* ===========================
+   PREENCHIMENTO AUTOMÁTICO
+=========================== */
+
+const parametros =
+new URLSearchParams(
+window.location.search
+);
+
+const identificadorURL =
+parametros.get("identificador");
+
+if(identificadorURL){
+
+document
+.getElementById("identificador")
+.value = identificadorURL;
+
+}
+
+/* ===========================
+   INICIALIZA
+=========================== */
+
+gerarCaptcha();
+
+</script>
+
+</body>
+
+</html>
