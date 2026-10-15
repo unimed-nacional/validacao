@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Validação de Atestado Médico Digital</title>
+<title>Validação de Documento Médico Digital</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -20,7 +20,7 @@
 
         <img src="logo.jpg" class="logo">
 
-        <h1>Validação de Atestado Médico Digital</h1>
+        <h1>Validação de Documento Médico Digital</h1>
 
     </div>
 
@@ -34,7 +34,7 @@
 <div class="lado-esquerdo">
 
 <label class="titulo-campo">
-Código do Atestado
+Código do Documento
 </label>
 
 <input
@@ -113,7 +113,7 @@ Visualizar Documento
 
 <footer>
 
-© 2026 Unimed Nacional - Sistema de Validação de Atestados Médicos Digitais
+© 2026 Unimed Nacional - Sistema de Validação de Documentos Médicos Digitais
 
 <br>
 
@@ -237,7 +237,7 @@ async function consultar() {
     if (identificador === "") {
 
         resultado.className = "resultado erro";
-        resultado.innerHTML = "Informe o código do atestado.";
+        resultado.innerHTML = "Informe o código do documento.";
 
         return;
 
@@ -276,7 +276,7 @@ async function consultar() {
             resultado.className = "resultado sucesso";
 
             resultado.innerHTML =
-                "<strong>Atestado Válido</strong>";
+                "<strong>Documento Válido</strong>";
 
             if (dados.link && dados.link !== "") {
 
